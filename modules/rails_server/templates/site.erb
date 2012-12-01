@@ -1,0 +1,11 @@
+<VirtualHost *:80>
+	ServerAdmin <%= webmaster %>
+	ServerName <%= host %>
+	DocumentRoot <%= site_dir %>
+	ErrorLog /var/log/apache2/<%= host %>-error_log
+	TransferLog /var/log/apache2/<%= host %>-access_log
+	<Directory <%= site_dir %>>
+		AllowOverride all
+		Options -MultiViews
+	</Directory>
+</VirtualHost>

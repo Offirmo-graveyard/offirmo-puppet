@@ -1,0 +1,10 @@
+<%
+# This file has been written thanks to the help of the passenger installer,
+# but it is made to work with the passenger apt package.
+# So we have to modifiy it slightly, notably removing this line :
+#	LoadModule passenger_module /usr/local/rvm/gems/[ruby_name]@[gemset_name]/gems/passenger-[passenger_version]/ext/apache2/mod_passenger.so
+%>
+<IfModule mod_passenger.c>
+	PassengerRoot /usr/lib/phusion-passenger
+	PassengerRuby /usr/local/rvm/wrappers/<%= ruby_rvm_name %>@<%= gemset_name %>/ruby
+</IfModule>
