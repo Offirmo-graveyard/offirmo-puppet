@@ -135,6 +135,42 @@ define apache2_powered::with_site ( $ensure = 'present', $config_content = '' )
 }
 
 
+# Define an apache2 site. Place all site configs into
+# /etc/apache2/sites-available and en-/disable them with this type.
+#
+# You can add a custom require (string) if the site depends on packages
+# that aren't part of the default apache2 package. Because of the
+# package dependencies, apache2 will automagically be included.
+define apache2_powered::with_standard_site ( $ensure = 'present', $contact_email, $server_hostname, $serving_dir )
+{
+	include apache2_powered # and not require ! Since we notify 'apache reload', 'apache2_powered' has a dependency on this class.
+	require apache2_powered::assets
+	
+	$site_file_en = "${apache2_powered::params::dir_sites}-enabled/${name}"
+	$site_file_av = "${apache2_powered::params::dir_sites}-available/${name}"
+	
+	file
+	{
+		$site_file_av:
+			# REM : this template needs $contact_email, $server_hostname, serving_dir
+			content => template("apache2_powered/site.erb"),
+			mode    => 644,
+			owner   => root,
+			group   => root,
+			ensure  => present,
+			alias   => "site-$name",  
+	}
+
+	# now, enable it.
+	exec
+	{
+		"/usr/sbin/a2ensite $name":
+			unless  => "/bin/sh -c '[ -L $site_file_en ] && [ $site_file_en -ef $site_file_av ]'",
+			notify  => Exec["reload-apache2"],
+			require => File[$site_file_av],
+	}
+}
+
 
 class apache2_powered($provider = 'zend')
 {

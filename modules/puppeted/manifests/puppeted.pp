@@ -11,7 +11,7 @@ define puppet_stage_report($report_id)
 	notify { "report-puppet-stage-$report_id":
 		message => "
 *******
-Hello from stage $stage
+Hello from stage $::stage
 *******
 ";
 	}

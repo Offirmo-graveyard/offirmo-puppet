@@ -285,10 +285,15 @@ class apt_powered($offline = 'false')
 					stage => apt;
 			}
 			
-			
+			notify
+	{
+		debug:
+			message => "${::lsbdistid}-${::lsbdistcodename}-sources.list";
+	}
+
 			# The main packages repositories declaration file
 			file { '/etc/apt/sources.list':
-				source => "puppet:///modules/apt_powered/$lsbdistid-$lsbdistcodename-sources.list",
+				source => "puppet:///modules/apt_powered/${::lsbdistid}-${::lsbdistcodename}-sources.list",
 				owner  => root,
 				group  => root,
 				mode   => 644,

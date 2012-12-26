@@ -1,7 +1,7 @@
 
 # Ensure that the igraph graph manipulation library is present.
 
-class mysql::client
+class mysql_powered::client
 {
 	package
 	{
@@ -12,7 +12,7 @@ class mysql::client
 
 
 
-class mysql::server($provider = 'zend', $password)
+class mysql_powered::server($provider = 'zend', $password)
 {
 	case $provider
 	{
@@ -50,9 +50,9 @@ class mysql::server($provider = 'zend', $password)
 	
 } # class mysql_powered::server
 
-define mysql::server::serving_database($root_password, $user = '')
+define mysql_powered::server::serving_database($root_password, $user = '')
 {
-	require mysql::server
+	require mysql_powered::server
 	
 	$dbname = $name
 	
@@ -89,9 +89,9 @@ define mysql::server::serving_database($root_password, $user = '')
 	
 }
 
-define mysql::user($root_password, $user_password)
+define mysql_powered::user($root_password, $user_password)
 {
-	require mysql::server
+	require mysql_powered::server
 	
 	$username = $name
 	

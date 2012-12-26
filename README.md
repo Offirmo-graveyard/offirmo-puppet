@@ -14,6 +14,7 @@ I make it public so other puppet users may have a look.
 
 This repo is available at : https://github.com/Offirmo/my-puppet-config
 
+sudo puppet apply --debug --detailed-exitcodes --verbose manifests/site.pp --modulepath=modules --ignorecache --no-usecacheonfailure
 
 TODO
 ====

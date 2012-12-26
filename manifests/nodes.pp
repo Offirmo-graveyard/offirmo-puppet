@@ -16,24 +16,50 @@ Stage[first] -> Stage[apt] -> Stage[main] -> Stage[last]
 
 
 
+
 ####### NOMRPG server #######
 import "nomrpg_secrets.pp"
-#node ip-10-227-205-129
-node ubuntuserver3
+#node ip-10-39-13-72
+node ubuntuserver6
+#node ubuntuserver3
 {
 	include nomrpg::secrets
+
+	# a place where we'll put our work data
+	file
+	{
+		'/work':
+			ensure  => directory,
+			;
+		'/work/home':
+			ensure  => directory,
+			;
+		'/work/shell':
+			ensure  => directory,
+			;
+		'/work/puppet':
+			ensure  => directory,
+			;
+		'/work/cpp':
+			ensure  => directory,
+			;
+		#'/work/www':  <-- no, this one will be created by another module
+		#	ensure  => directory,
+		#	;
+		'/work/misc':
+			ensure  => directory,
+			;
+	}
 	
-	# Redefinition of apache serving dir.
-	# (to match the dev server, easier)
-	file {  '/srv/dev':	ensure  => directory ; }
-	$apache2_serving_dir = '/srv/dev/www'
+	# Redefinition of apache serving dir
+	$apache2_serving_dir = '/work/www'
 	
 	# basic
 	# We use the "class" syntax here because we need to specify a run stage.
 	class
 	{
 		### classes with explicit stages
-		'puppeted': # debug
+		'puppeted': # mainly debug display
 			stage   => first,
 			;
 		'apt_powered': # Very important for managing apt sources
@@ -47,138 +73,98 @@ node ubuntuserver3
 			;
 		'offirmo_ubuntu': # includes an "altadmin" user
 			;
+		#'ubuntu_vmware':
 		'offirmo_aws_instance':
 			;
 	}
 	
 	### The roles of this machine
 	
-	#$MySQL_root_password = $nomrpg::secrets::MySQL_root_password
+	$MySQL_root_password = $nomrpg::secrets::MySQL_root_password
 	$contact_email       = $nomrpg::secrets::contact_email
 	
 	class
 	{
+		'ssh_powered':
+			;
+		# we always need a LAMP
+		'zend_server_ce_powered':
+			;
+		'zend_server_ce_powered::phpmyadmin::with-extended-session-time':
+			;
+		'mysql_powered::server':
+			password => $MySQL_root_password,
+			;
+	}
+	# various tools
+	class
+	{
+		'git_powered':
+			;
+		'svn_powered':
+			;
+		# java for netbeans and eclipse
+		'java_powered':
+			;
+		'with_tool::cmake':
+			;
+	}
+	class
+	{
+		# simple SMTP, for mail capabilities
 		'ssmtp_powered':
 			template => 'gmail',
 			email    => $contact_email,
 			password => $nomrpg::secrets::gmail_password,
 			;
-		'git_powered':
-			;
 	}
 }
 
 
 
-####### Current dev machine #######
-import "ubuntuserver4_secrets.pp"
-
-node ubuntuserver33
+####### LMPT server #######
+import "lmpt_secrets.pp"
+node ip-10-227-45-60
+#node ubuntuserver6
 {
-	include ubuntuserver4::secrets
-	
-	# A generic user
-	# XXX TODO review
-	user
+	include lmpt::secrets
+
+	# a place where we'll put our work data
+	file
 	{
-		'admyn':
-			shell      => '/bin/bash',
-			groups     => ['adm', 'admin', 'dialout', 'plugdev'], # without those minimum groups, this user would be useless
-			comment    => "Generic user,,,",
-			managehome => true,
-			ensure     => present,
+		'/work':
+			ensure  => directory,
 			;
-	}
-	
-	# basics needing a run state
-	# We use the "class" syntax here because we need to specify a run stage.
-	class
-	{
-		'puppeted': # debug
-			stage   => first, # note the explicit stage !
+		'/work/home':
+			ensure  => directory,
 			;
-		'apt_powered': # Very important for managing apt sources
-			stage   => apt, # note the explicit stage !
-			#offline => 'true', # uncomment this if you are offline or don't want updates
+		'/work/shell':
+			ensure  => directory,
 			;
-		'apt_powered::upgraded': # will systematically upgrade paquets. dev machine -> we want to stay up to date
-			stage   => apt, # note the explicit stage !
+		'/work/puppet':
+			ensure  => directory,
 			;
-	}
-	
-	# basics, second part
-	class
-	{
-		'puppet::client': # of course ;-)
+		'/work/cpp':
+			ensure  => directory,
 			;
-		'ubuntu_virtualbox':
-			;
-		'offirmo_ubuntu':
-			;
-		#'offirmo_aws_instance':
+		#'/work/www':   xxx no, this one will be created by a module
+		#	ensure  => directory,
 		#	;
-	}
-	
-	### The roles of this machine
-	
-} # node ...
-
-
-node toto
-{
-	class
-	{
-		'cpp_powered::development':
-			owner => 'admyn',
-			;
-	}
-
-	cpp_powered::with_lib
-	{
-		'boost':
-			;
-		'wt':
+		'/work/misc':
+			ensure  => directory,
 			;
 	}
 	
-	## an alternate env
-	cpp_powered::with_compile_env
-	{
-		'gcc47': # this is the "technical name"
-			compiler_name    => 'gcc',
-			compiler_version => '47',
-			;
-	}
-	cpp_powered::with_lib
-	{
-		'boost47':
-			lib         => 'boost',
-			compile_env_id => 'gcc47',
-			;
-		'wt47':
-			lib         => 'wt',
-			compile_env_id => 'gcc47',
-			;
-	}
-}
-
-####### Kalemya charity server #######
-import "kalemya_secrets.pp"
-node ip-10-228-235-142
-{
-	include kalemya::secrets
-	
-	# Redefinition of apache serving dir.
-	# (to match the dev server, easier)
-	file {  '/srv/dev':	ensure  => directory ; }
-	$apache2_serving_dir = '/srv/dev/www'
+	# Redefinition of apache serving dir
+	# apache will declare and create thi dir
+	$apache2_serving_dir = '/work/www'
 	
 	# basic
 	# We use the "class" syntax here because we need to specify a run stage.
 	class
 	{
 		### classes with explicit stages
-		'puppeted': # debug
+		'puppeted': # mainly debug display
 			stage   => first,
 			;
 		'apt_powered': # Very important for managing apt sources
@@ -196,228 +182,68 @@ node ip-10-228-235-142
 			;
 	}
 	
-	### The main roles of this machine
-	$MySQL_root_password = $kalemya::secrets::MySQL_root_password
-	$contact_email       = $kalemya::secrets::contact_email
-	
-	class
-	{
-		'zend_server_ce_powered':
-			;
-		'mysql::server':
-			password => $MySQL_root_password,
-			;
-		'wordpress_server':
-			;
-	}
-	class
-	{
-		'ssmtp_powered':
-			template => 'gmail',
-			email    => $contact_email,
-			password => $kalemya::secrets::gmail_password,
-			;
-	}
-	
-	wordpress_server::serving_instance
-	{
-		'kalemya': # this is the "technical name"
-			human_name     => 'Kalemya',
-			server_name    => 'kalemya.org',
-			webmaster      => $contact_email,
-			user           => 'kal',
-			mysql_root_pwd => $MySQL_root_password,
-			mysql_user_pwd => $kalemya::secrets::MySQL_worpress_db_password,
-			;
-	}
-}
-
-
-####### 10km charity server #######
-import "les10kiloMEP_secrets.pp"
-node ip-10-58-182-166
-{
-	include les10kiloMEP::secrets
-	
-	# Redefinition of apache serving dir.
-	# (to match the dev server, easier)
-	file {  '/srv/dev':	ensure  => directory ; }
-	$apache2_serving_dir = '/srv/dev/www'
-	
-	# basic
-	# We use the "class" syntax here because we need to specify a run stage.
-	class
-	{
-		### classes with explicit stages
-		'puppeted': # debug
-			stage   => first,
-			;
-		'apt_powered': # Very important for managing apt sources
-			stage   => apt,
-			;
-	}
-	# basics, second part
-	class
-	{
-		'puppet::client': # of course ;-)
-			;
-		'offirmo_ubuntu': # includes an "altadmin" user
-			;
-		'offirmo_aws_instance':
-			;
-	}
-	
-	### The main roles of this machine
-	$MySQL_root_password = $les10kiloMEP::secrets::MySQL_root_password
-	$contact_email       = $les10kiloMEP::secrets::contact_email
-	
-	class
-	{
-		'zend_server_ce_powered':
-			;
-		'mysql::server':
-			password => $MySQL_root_password,
-			;
-		'wordpress_server':
-			;
-	}
-	class
-	{
-		'ssmtp_powered':
-			template => 'gmail',
-			email    => $contact_email,
-			password => $les10kiloMEP::secrets::gmail_password,
-			;
-	}
-	
-	wordpress_server::serving_instance
-	{
-		'les10kilomep': # this is the "technical name"
-			human_name     => 'Les 10 kilo\'MEP',
-			server_name    => 'les10kilomep.org',
-			webmaster      => $contact_email,
-			user           => 'l10km',
-			mysql_root_pwd => $MySQL_root_password,
-			mysql_user_pwd => $les10kiloMEP::secrets::MySQL_worpress_db_password,
-			;
-	}
-}
-
-
-
-####### Current dev machine #######
-import "ubuntuserver3_secrets.pp"
-
-node ubuntuserver3old
-{
-	include les10kiloMEP::secrets
-	include kalemya::secrets
-	include ubuntuserver3::secrets
-	
-	# redefinition of apache serving dir
-	# we want the directory to be in the shared folder
-	$apache2_serving_dir = '/srv/dev/www'
-	
-	# A generic user
-	user
-	{
-		'admyn':
-			shell      => '/bin/bash',
-			groups     => ['adm', 'admin', 'dialout', 'plugdev'], # without those minimum groups, this user would be useless
-			comment    => "Generic user,,,",
-			managehome => true,
-			ensure     => present,
-			;
-	}
-	
-	# basics
-	# We use the "class" syntax here because we need to specify a run stage.
-	class
-	{
-		'puppeted': # debug
-			stage   => first, # note the explicit stage !
-			;
-		'apt_powered': # Very important for managing apt sources
-			stage   => apt, # note the explicit stage !
-			#offline => 'true', # uncomment this if you are offline (no updates)
-			;
-		'apt_powered::upgraded': # dev machine, we want to stay up to date
-			stage   => apt, # note the explicit stage !
-			;
-	}
-	# basics, second part
-	class
-	{
-		'puppet::client': # of course ;-)
-			;
-		'ubuntu_vmware':
-			;
-		'offirmo_ubuntu':
-			;
-		#'offirmo_aws_instance':
-		#	;
-	}
-	
 	### The roles of this machine
-	# basics
-	$MySQL_root_password = $ubuntuserver3::secrets::MySQL_root_password
+	
+	# shortcuts for frequently used vars 
+	$MySQL_root_password = $lmpt::secrets::MySQL_root_password
+	$contact_email       = $lmpt::secrets::contact_email
+	
 	class
 	{
 		'zend_server_ce_powered':
 			;
-		'zend_server_ce_powered::phpmyadmin::with-extended-session-time':
-			;
-		'mysql::server':
-			password => $MySQL_root_password,
+		'ssh_powered':
 			;
 		'git_powered':
 			;
-		'svn_powered':
-			;
-		'java_powered':
-			;
 	}
-	# Wt
 	class
 	{
-		'cpp_powered::development':
-			;
-		'wt_powered::development':
-			;
-		'with_tool::cmake':
+		'mysql_powered::server':
+			password => $MySQL_root_password,
 			;
 	}
-	# wordpress
 	class
 	{
 		'ssmtp_powered':
 			template => 'gmail',
-			email    => $ubuntuserver3::secrets::contact_email,
-			password => $ubuntuserver3::secrets::gmail_password,
+			email    => $contact_email,
+			password => $lmpt::secrets::gmail_password,
 			;
 	}
-	class
+
+	mysql_powered::user
 	{
-		'wordpress_server':
+		'lmpt': # this is the "technical name"
+			root_password => $MySQL_root_password,
+			user_password => $lmpt::secrets::MySQL_lmpt_db_password,
 			;
 	}
-	wordpress_server::serving_instance
+	mysql_powered::server::serving_database
 	{
-		'les10kilomep': # this is the "technical name"
-			human_name     => 'Les 10 kilo\'MEP',
-			server_name    => 'les10kilomep.org',
-			webmaster      => $les10kiloMEP::secrets::contact_email,
-			user           => 'l10km',
-			mysql_root_pwd => $MySQL_root_password,
-			mysql_user_pwd => $les10kiloMEP::secrets::MySQL_worpress_db_password,
-			;
-		'kalemya': # this is the "technical name"
-			human_name     => 'Kalemya',
-			server_name    => 'kalemya.org',
-			webmaster      => $les10kiloMEP::secrets::contact_email,
-			user           => 'kal',
-			mysql_root_pwd => $MySQL_root_password,
-			mysql_user_pwd => $kalemya::secrets::MySQL_worpress_db_password,
+		'lmpt': # this is the "technical name"
+			root_password => $MySQL_root_password,
+			user          => 'lmpt',
 			;
 	}
-} # node ...
+	apache2_powered::with_standard_site
+	{
+		'lmpt':
+			contact_email => $contact_email,
+			server_hostname => 'lmpt.offirmo.net',
+			serving_dir => '/work/www/lmpt',
+			;
+	}
+}
+
+# config_content => '<VirtualHost *:80>
+# 	ServerName lmpt.offirmo.net
+# 	ServerAdmin offirmo.net@gmail.com
+# 	DocumentRoot /work/www/lmpt
+# 	ErrorLog /var/log/apache2/lmpt-error_log
+# 	TransferLog /var/log/apache2/lmpt-access_log
+# 	<Directory /work/www/lmpt>
+# 		AllowOverride all
+# 		Options FollowSymLinks -MultiViews
+# 	</Directory>
+# </VirtualHost>'

@@ -33,13 +33,21 @@ class puppet::common_assets
 {
 	include puppet::params
 	
-	class
+	if ($::operatingsystem == 'Ubuntu')
 	{
-		# we use an utility class to be able to specify the stage
-		with_puppet_apt_repository:
-			stage => apt
+		# ubuntu 12 has a decent puppet version
+		# but earlier versions need backports
+		if ($::lsbmajdistrelease < 12)
+		{
+			class
+			{
+				# we use an utility class to be able to specify the stage
+				with_puppet_apt_repository:
+					stage => apt
+			}
+		}
 	}
-	
+
 	package
 	{
 		'facter':
@@ -79,6 +87,10 @@ class puppet::server
 				}
 			}
 			'maverick':
+			{
+				require with_tool::whois
+			}
+			'precise':
 			{
 				require with_tool::whois
 			}
@@ -154,5 +166,3 @@ $text
 			;
 	}
 }
-
-

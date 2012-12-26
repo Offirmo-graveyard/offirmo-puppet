@@ -19,8 +19,8 @@ class offirmo_ubuntu
 		}
 		
 		### Useful classes
-		include ssh_powered # SSH is a must-have
-		include ntp_powered # very useful
+		#include ssh_powered # SSH is a must-have
+		#include ntp_powered # very useful
 		
 		# Useful packages
 		package
@@ -44,12 +44,13 @@ class offirmo_ubuntu
 			#	ensure => latest; # this package is not critical, we can use 'latest'
 		} # packages
 		
-		# alternative admin
+		# alternative, backup admin in case we mess up with the default one
+		# (yes, I did it once and lost admin access on my own machine)
 		user
 		{
 			'altadmin':
 				shell      => '/bin/bash',
-				groups     => ['adm', 'dialout', 'admin', 'plugdev'], # 'cdrom','rvm','lpadmin','sambashare'
+				groups     => ['adm', 'dialout', 'plugdev'], # 'admin', 'cdrom','rvm','lpadmin','sambashare'
 				# adm : le fait d'appartenir au groupe adm donne certains privilèges comme par exemple pouvoir accéder aux fichiers log du système ce qu'un utilisateur normal ne peut pas faire. 
 				# dialout : The dialout group is used to control access to dialout scripts which connect to ISPs, etc. If you're using ppp, dip or similar services you'll need to be a member of the dialout group. (Or root!)
 				# The plugdev group is normally assigned to filesystems contained on removable media. I think by default you should be a member of this group. If not you should add yourself to the plugdev group.

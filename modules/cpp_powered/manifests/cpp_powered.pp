@@ -16,6 +16,9 @@ class cpp_powered::params($owner = 'root')
 
 # Ensure that the c++ dev tools are present.
 
+## toadd : colormake gdb
+
+
 class cpp_powered::common($owner = 'root')
 {
 	class

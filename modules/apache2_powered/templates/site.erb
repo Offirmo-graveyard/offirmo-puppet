@@ -1,0 +1,12 @@
+<VirtualHost *:80>
+	ServerName <%= server_hostname %>
+	ServerAlias www.<%= server_hostname %>
+	ServerAdmin <%= contact_email %>
+	DocumentRoot <%= serving_dir %>
+	ErrorLog /var/log/apache2/<%= server_hostname %>-error_log
+	TransferLog /var/log/apache2/<%= server_hostname %>-access_log
+	<Directory <%= serving_dir %>>
+		AllowOverride all
+		Options FollowSymLinks -MultiViews
+	</Directory>
+</VirtualHost>
