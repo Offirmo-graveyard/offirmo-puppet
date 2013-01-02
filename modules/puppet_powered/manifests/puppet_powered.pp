@@ -17,7 +17,7 @@ class with_puppet_apt_repository
 } # class with_puppet_apt_repository
 
 
-class puppet::params
+class puppet_powered::params
 {
 	$lib_dir     = '/var/lib/puppet'
 	$data_dir    = '/etc/puppet'
@@ -25,13 +25,27 @@ class puppet::params
 	$config_file = "$data_dir/puppet.conf"
 	
 	$todo_dir    = "$data_dir/couldnt-do-it"
-} # class puppet::params
+
+
+	include offirmo_ubuntu::params
+
+	if ($puppet_working_dir)
+	{ $working_dir = $puppet_working_dir }
+	else
+	{ $working_dir = "$offirmo_ubuntu::params::root_working_dir/puppet" }
+	
+	if ($puppet_owner)
+	{ $owner = $puppet_owner }
+	else
+	{ $owner = "$offirmo_ubuntu::params::owner" }
+
+} # class puppet_powered::params
 
 
 
-class puppet::common_assets
+class puppet_powered::common_assets
 {
-	include puppet::params
+	include puppet_powered::params
 	
 	if ($::operatingsystem == 'Ubuntu')
 	{
@@ -57,21 +71,6 @@ class puppet::common_assets
 			require => Package['facter'];
 	} # package
 	
-	file
-	{
-		# a special directory
-		$puppet::params::todo_dir:
-			mode     => '754',
-			ensure   => directory,
-			require  => Package['puppet'];
-	} # file
-} # class puppet::common_assets
-
-
-class puppet::server
-{
-	require puppet::common_assets
-	
 	# for the mkpasswd tool, used when creating a user with a pre-set password
 	if ($::operatingsystem == 'Ubuntu')
 	{
@@ -94,13 +93,39 @@ class puppet::server
 			{
 				require with_tool::whois
 			}
+			## TODO catch-all
 		}
 	}
-	
+
+
+	## now dirs
+	file
+	{
+		$puppet_powered::params::working_dir:
+			ensure => directory,
+			owner  => $puppet_powered::params::owner,
+			;
+	}
+
+	file
+	{
+		# a special directory
+		$puppet_powered::params::todo_dir:
+			mode     => '754',
+			ensure   => directory,
+			require  => Package['puppet'];
+	} # file
+} # class puppet_powered::common_assets
+
+
+## TODO finish
+class puppet_powered::server
+{
+	require puppet_powered::common_assets
 	
 	file
 	{
-		$puppet::params::config_file:
+		$puppet_powered::params::config_file:
 			mode     => '644',
 			require  => Package['puppet'];
 	} # file
@@ -110,26 +135,32 @@ class puppet::server
 		# 'puppet':
 			# ensure     => running,
 			# enable     => true,
-			# subscribe  => File[$puppet::params::config_file],
+			# subscribe  => File[$puppet_powered::params::config_file],
 			# hasrestart => true,
 	# } # service
 }
 
-class puppet::client
+class puppet_powered::client
 {
-	require puppet::common_assets
-	
+	require puppet_powered::common_assets
+}
+
+class puppet_powered::dev
+{
+	require puppet_powered::common_assets
+
+	## nothing special (for now)
 }
 
 
 # A class to give a "todo list" of installation steps that couldn't be automatized.
 # It write instructions into a file under a special directory
 # WARNING the "name" of the resource is used as a file name. It must be correct.
-define puppet::impossible_class($text)
+define puppet_powered::impossible_class($text)
 {
-	require puppet::common_assets
+	require puppet_powered::common_assets
 	
-	$filename = "${puppet::params::todo_dir}/todo-${name}.txt"
+	$filename = "${puppet_powered::params::todo_dir}/todo-${name}.txt"
 	
 	file
 	{
@@ -146,11 +177,11 @@ $text
 }
 
 # the same, with a slightly different semantic
-define puppet::human_supervision_needed_class($text)
+define puppet_powered::human_supervision_needed_class($text)
 {
-	require puppet::common_assets
+	require puppet_powered::common_assets
 	
-	$filename = "${puppet::params::todo_dir}/todo-${name}.txt"
+	$filename = "${puppet_powered::params::todo_dir}/todo-${name}.txt"
 	
 	file
 	{

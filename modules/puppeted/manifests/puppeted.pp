@@ -11,7 +11,7 @@ define puppet_stage_report($report_id)
 	notify { "report-puppet-stage-$report_id":
 		message => "
 *******
-Hello from stage $::stage
+Hello from stage \"$stage\"
 *******
 ";
 	}
@@ -21,9 +21,6 @@ Hello from stage $::stage
 # we must define a class for each stage.
 # See below for the use of those classes.
 class puppet-stage-reporter-first     { puppet_stage_report { puppet_stage_report_first:     report_id => 'first' } }
-# class puppet-stage-reporter-bootstrap { puppet_stage_report { puppet_stage_report_bootstrap: report_id => 'bootstrap' } }
-# class puppet-stage-reporter-tools     { puppet_stage_report { puppet_stage_report_tools:     report_id => 'tools' } }
-# class puppet-stage-reporter-assets    { puppet_stage_report { puppet_stage_report_assets:    report_id => 'assets' } }
 class puppet-stage-reporter-apt       { puppet_stage_report { puppet_stage_report_apt:       report_id => 'apt' } }
 class puppet-stage-reporter-main      { puppet_stage_report { puppet_stage_report_main:      report_id => 'main' } }
 class puppet-stage-reporter-last      { puppet_stage_report { puppet_stage_report_last:      report_id => 'last' } }
@@ -56,14 +53,8 @@ Debug infos :
 	{
 		puppet-stage-reporter-first:
 			stage => first;
-		# puppet-stage-reporter-bootstrap:
-			# stage => bootstrap;
 		puppet-stage-reporter-apt:
 			stage => apt;
-		# puppet-stage-reporter-tools:
-			# stage => tools;
-		# puppet-stage-reporter-assets:
-			# stage => assets;
 		puppet-stage-reporter-main:
 			stage => main;
 		puppet-stage-reporter-last:

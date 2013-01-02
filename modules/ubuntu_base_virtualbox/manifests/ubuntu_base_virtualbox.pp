@@ -1,6 +1,6 @@
 
 
-class ubuntu_virtualbox($headless = true)
+class ubuntu_base_virtualbox($headless = true)
 {
 	# First, we check if this class is really applied to a compatible system :
 	if !$is_virtual
@@ -26,18 +26,12 @@ class ubuntu_virtualbox($headless = true)
 			logoutput => true,
 		}
 		
-		# Now we'll install the VMware tools, needed for better perfs and additional functionalities
-		# VMware tools provided by VMware cannot be installed on modern distros.
-		# We'll use community maintained open-vm-tools (with the blessing of VMware)
-		# Explanations : https://help.ubuntu.com/community/VMware/Tools 
-		
-		# very important ! The package will install differently according to the presence of those packages,
-		# so they MUST be present before apt-get install
+		## Those packages are needed for VirtualBox additions
 		require with_tool::build-essential
 		require with_tool::linux-source
 		require with_tool::linux-headers-virtual
 		
-		# ...
+		## I don't know how to install VirtualBox additions automatically...
 	
 	} # check if virtualbox virtualized
 } # class ubuntu_virtualbox

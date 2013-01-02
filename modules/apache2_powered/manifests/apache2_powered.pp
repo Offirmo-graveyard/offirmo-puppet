@@ -10,7 +10,9 @@ class apache2_powered::params
 	$dir_mods          = "/etc/apache2/mods"
 	$dir_includes      = "/etc/apache2/site-includes"
 	$dir_conf          = "/etc/apache2/conf.d"
-	$dir_serv_default = "/var/www"
+	
+	include offirmo_ubuntu::params
+	$dir_serv_default = "$offirmo_ubuntu::params::root_working_dir/www"
 	
 	if ($apache2_serving_dir)
 	{ $dir_serv = $apache2_serving_dir }

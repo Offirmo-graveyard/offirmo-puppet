@@ -1,6 +1,6 @@
 
 
-class ubuntu_vmware($headless = true)
+class ubuntu_base_vmware($headless = true)
 {
 	# First, we check if this class is really applied to a compatible system :
 	if !$is_virtual
@@ -31,7 +31,7 @@ class ubuntu_vmware($headless = true)
 		# We'll use community maintained open-vm-tools (with the blessing of VMware)
 		# Explanations : https://help.ubuntu.com/community/VMware/Tools 
 		
-		# very important ! The package will install differently according to the presence of those packages,
+		# very important ! The VMware tools package will install differently according to the presence of those packages,
 		# so they MUST be present before apt-get install
 		require with_tool::build-essential
 		require with_tool::linux-source
@@ -56,12 +56,12 @@ class ubuntu_vmware($headless = true)
 		# open-vm-toolbox
 		
 		
-		puppet::impossible_class
+		puppet_powered::impossible_class
 		{
 			"install-vmware-optimized-network-driver":
 				text => "
 I can't manage to automatically install the vmware network driver
-because it temporarily disrupt the network and thus stop puppet operation.
+because it temporarily disrupt the network and thus may stop puppet client/server operation.
 
 Note : vmware tools must be installed.
 
@@ -84,7 +84,7 @@ What to do :
 
 ",
 			;
-		} # puppet::impossible_class
+		} # puppet_powered::impossible_class
 	
 	} # check if vmware virtualized
 } # class ubuntu_vmware

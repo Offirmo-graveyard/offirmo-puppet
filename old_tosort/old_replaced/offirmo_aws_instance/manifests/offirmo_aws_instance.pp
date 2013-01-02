@@ -4,7 +4,7 @@
 class offirmo_aws_instance
 {
 	# First, we check if this class is really applied to a compatible system :
-	if 0 == 1 # TODO test
+	if $ec2_public_hostname == ""
 	{
 		err("It looks like this sytem is not an AWS instance. This class is for AWS instances only.")
 	}

@@ -1,7 +1,7 @@
 
 # Ensure that the ssh tool is present.
 
-class ssh_powered
+class ssh_powered()
 {
 	package
 	{

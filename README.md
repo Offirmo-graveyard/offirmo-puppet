@@ -12,7 +12,7 @@ The targeted machines are Ubuntu on Amazon web servers or virtualized (VMware / 
 
 I make it public so other puppet users may have a look.
 
-This repo is available at : https://github.com/Offirmo/my-puppet-config
+This repo is available at : https://github.com/Offirmo/offirmo-puppet
 
 sudo puppet apply --debug --detailed-exitcodes --verbose manifests/site.pp --modulepath=modules --ignorecache --no-usecacheonfailure
 
