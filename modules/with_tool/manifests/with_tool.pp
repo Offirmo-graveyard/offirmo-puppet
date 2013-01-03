@@ -58,13 +58,18 @@ class with_tool::linux-headers-virtual()
 	}
 }
 
-class with_tool::python-software-properties()
+class with_tool::add-apt-repository()
 {
 	package
 	{
 		'python-software-properties': 
 			ensure => latest # This packages is not critical, we can use 'latest'
 	}
+	#package
+	#{
+	#	'software-properties-common': 
+	#		ensure => latest # This packages is not critical, we can use 'latest'
+	#}
 }
 
 class with_tool::wget()

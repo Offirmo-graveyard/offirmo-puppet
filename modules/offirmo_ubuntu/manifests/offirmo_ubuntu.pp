@@ -173,3 +173,9 @@ To set a password : (not always required depending on your config and what you s
 		} # check if AWS instance
 	} # check if Ubuntu
 }
+
+
+		'git_powered':
+			;
+
+			

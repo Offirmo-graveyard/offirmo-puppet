@@ -42,6 +42,23 @@ class puppet_powered::params
 } # class puppet_powered::params
 
 
+## thanks http://projects.puppetlabs.com/projects/1/wiki/Download_File_Recipe_Patterns
+define puppet_powered::downloaded_file(
+        $site="",
+        $cwd="",
+        $creates="",
+        $require="",
+        $user="") {                                                                                         
+
+    exec { $name:                                                                                                                     
+        command => "wget ${site}/${name}",                                                         
+        cwd => $cwd,
+        creates => "${cwd}/${name}",                                                              
+        require => $require,
+        user => $user,                                                                                                          
+    }
+
+}
 
 class puppet_powered::common_assets
 {

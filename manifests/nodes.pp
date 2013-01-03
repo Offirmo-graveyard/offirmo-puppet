@@ -23,7 +23,7 @@ Stage[first] -> Stage[apt] -> Stage[main] -> Stage[last]
 ####### NOMRPG server #######
 import "nomrpg_secrets.pp"
 #node ip-10-39-13-72
-node ubuntuserver6
+node ubuntuserver7
 #node ubuntuserver3
 {
 	## the passwords and misc credentials
@@ -50,7 +50,7 @@ node ubuntuserver6
 	{
 		'ubuntu_base': # hardware/drivers install (mostly virtualization additions)
 			;
-		'offirmo_ubuntu': # useful packages and users
+		'offirmo_ubuntu::dev': # useful packages and users
 			;
 		'puppet_powered::client': # of course ;-)
 			;

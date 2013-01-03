@@ -127,7 +127,7 @@ deb $address $branch $sections
 define apt_powered::ppa_apt_repository($ppa, $override_branch = '')
 {
 	include apt_powered # and not require ! Since we notify apt-get update, 'apt_powered' has a dependency on this class.
-	require with_tool::python-software-properties # The 'add-apt-repository' tool is in the package 'python-software-properties'.
+	require with_tool::add-apt-repository
 	
 	# Preparation : we set the pathes for all 'exec' resources in this scope.
 	Exec {
@@ -185,7 +185,7 @@ define apt_powered::ppa_apt_repository($ppa, $override_branch = '')
 				command => "sudo add-apt-repository $ppa",
 				unless  => "test -f $target",
 				notify  => Exec['sudo apt-get update'], # update is scheduled daily, but we don't want to wait if this file is modified.
-				require => Package['python-software-properties'];
+				;
 		}
 		
 		if ($override_branch) and ($override_branch != $::lsbdistcodename)
@@ -281,7 +281,7 @@ class apt_powered($offline = 'false')
 			{
 				'with_tool::wget':
 					stage => apt;
-				'with_tool::python-software-properties': # idem
+				'with_tool::add-apt-repository': # idem
 					stage => apt;
 			}
 			
