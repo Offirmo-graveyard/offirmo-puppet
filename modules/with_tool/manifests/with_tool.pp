@@ -4,7 +4,7 @@
 # This package is very well tested, we can use 'latest'
 # This packages is not critical, we can use 'latest'
 
-class with_tool::bash
+class with_tool::bash()
 {
 	package
 	{
@@ -13,7 +13,7 @@ class with_tool::bash
 	}
 }
 
-class with_tool::curl
+class with_tool::curl()
 {
 	package
 	{
@@ -22,7 +22,7 @@ class with_tool::curl
 	}
 }
 
-class with_tool::whois
+class with_tool::whois()
 {
 	package
 	{
@@ -31,7 +31,7 @@ class with_tool::whois
 	}
 }
 
-class with_tool::build-essential
+class with_tool::build-essential()
 {
 	package
 	{
@@ -40,7 +40,7 @@ class with_tool::build-essential
 	}
 }
 
-class with_tool::linux-source
+class with_tool::linux-source()
 {
 	package
 	{
@@ -49,16 +49,16 @@ class with_tool::linux-source
 	}
 }
 
-class with_tool::linux-headers-virtual
+class with_tool::linux-headers-virtual()
 {
 	package
 	{
 		'linux-headers-virtual':
-			ensure => latest; # This package *must* be 'latest'
+			ensure => latest; # This package *must* be 'latest' to follow current kernel
 	}
 }
 
-class with_tool::python-software-properties
+class with_tool::python-software-properties()
 {
 	package
 	{
@@ -67,7 +67,7 @@ class with_tool::python-software-properties
 	}
 }
 
-class with_tool::wget
+class with_tool::wget()
 {
 	package
 	{
@@ -76,7 +76,7 @@ class with_tool::wget
 	}
 }
 
-class with_tool::patch
+class with_tool::patch()
 {
 	package
 	{
@@ -85,11 +85,27 @@ class with_tool::patch
 	}
 }
 
-class with_tool::cmake
+class with_tool::cmake()
 {
 	package
 	{
 		['cmake', 'cmake-curses-gui' ]:
 			ensure => latest; # Those packages are not critical, we can use 'latest' (really ?)
 	}
+}
+
+class with_tool::eclipse::cdt()
+{
+	class
+	{
+		## java needed for eclipse
+		'java_powered':
+			;
+	}
+	package
+	{
+		'xorg':
+			ensure => latest; # Those packages are not critical, we can use 'latest'
+	}
+	
 }

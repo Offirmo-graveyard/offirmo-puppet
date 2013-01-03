@@ -39,7 +39,7 @@ class zend_server_ce_powered($php_version = '5.3')
 			require => Package['zend-server-ce'];
 	} # packages
 	
-	puppet::impossible_class
+	puppet_powered::impossible_class
 	{
 		"set-a-password-for-zend-ce-web-admin-interface":
 			text => "
@@ -59,7 +59,7 @@ and set a password.
 			;
 	}
 	
-	puppet::impossible_class
+	puppet_powered::impossible_class
 	{
 		"make-phpmyadmin-accessible-from-outside-localhost":
 			text => "
@@ -91,15 +91,15 @@ You will then need to restart the server serving phpmyadmin :
 	#		returns => [0, 1], # don't care if it fails, means it's already installed
 	#		require => Package['zend-server-ce'],
 	#}
-	puppet::impossible_class
-	{
-		"reboot-apache-after-adding-mongo-module":
-			text => "
-I'm lazy so it's not automated. Just restart the apache server (if not already done) :
-	sudo /etc/init.d/apache2 reload
-",
-			;
-	}
+	#puppet::impossible_class
+	#{
+	#	"reboot-apache-after-adding-mongo-module":
+	#		text => "
+#I'm lazy so it's not automated. Just restart the apache server (if not already done) :
+#	sudo /etc/init.d/apache2 reload
+#",
+#			;
+#	}
 	#file
 	#{
 	#	'/usr/local/zend/etc/conf.d/mongo.ini':

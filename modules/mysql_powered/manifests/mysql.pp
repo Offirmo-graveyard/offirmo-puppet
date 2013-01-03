@@ -12,7 +12,7 @@ class mysql_powered::client
 
 
 
-class mysql_powered::server($provider = 'zend', $password)
+class mysql_powered::server($provider = 'zend', $root_password)
 {
 	case $provider
 	{
@@ -33,9 +33,9 @@ class mysql_powered::server($provider = 'zend', $password)
 		"Set MySQL server root password": # cf. http://www.cyberciti.biz/faq/mysql-change-root-password/
 			require     => $dep_package,
 			#refreshonly => true,
-			unless      => "mysqladmin -u root -p'$password' status",
+			unless      => "mysqladmin -u root -p'$root_password' status",
 			path        => "/bin:/usr/bin",
-			command     => "mysqladmin -u root password $password",
+			command     => "mysqladmin -u root password $root_password",
 	}
 	
 	# service

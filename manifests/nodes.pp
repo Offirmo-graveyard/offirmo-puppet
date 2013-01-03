@@ -28,6 +28,10 @@ node ubuntuserver6
 {
 	## the passwords and misc credentials
 	include nomrpg::secrets
+	$MySQL_root_password = $nomrpg::secrets::MySQL_root_password
+	$contact_email       = $nomrpg::secrets::contact_email
+	$gmail_password      = $nomrpg::secrets::gmail_password
+
 
 	## base classes of this machine
 	## that need a specific stage.
@@ -46,19 +50,13 @@ node ubuntuserver6
 	{
 		'ubuntu_base': # hardware/drivers install (mostly virtualization additions)
 			;
-		'offirmo_ubuntu': # base packages and users
+		'offirmo_ubuntu': # useful packages and users
 			;
 		'puppet_powered::client': # of course ;-)
 			;
 	}
 
 	### The roles of this machine
-
-
-	$MySQL_root_password = $nomrpg::secrets::MySQL_root_password
-	$contact_email       = $nomrpg::secrets::contact_email
-	$gmail_password      = $nomrpg::secrets::gmail_password
-
 	class
 	{
 		# simple SMTP, for mail capabilities
@@ -67,49 +65,16 @@ node ubuntuserver6
 			email    => $contact_email,
 			password => $gmail_password,
 			;
+		'lamp_powered::dev':
+			mysql_root_password => $MySQL_root_password,
+			;
 		'cpp_powered::dev':
 			;
 		'shell_powered::dev':
 			;
-		#'lamp_powered::dev'
-		#	;
 		'puppet_powered::dev':
 			;
 	}
-
-	#class
-	#{
-		# we always need a LAMP
-		#'zend_server_ce_powered':
-		#	;
-		#'zend_server_ce_powered::phpmyadmin::with-extended-session-time':
-		#	;
-		#'mysql_powered::server':
-		#	password => $MySQL_root_password,
-		#	;
-	#}
-	#class
-	#{
-		# java for netbeans and eclipse
-		#'java_powered':
-		#	;
-	#}
-	
-
-		# a place where we'll put our work data
-#	file
-#	{
-#		'/work/shell':
-#			ensure  => directory,
-#			;
-#		'/work/puppet':
-#			ensure  => directory,
-#			;
-#		'/work/cpp':
-#			ensure  => directory,
-#			;
-#	}
-
 }
 
 

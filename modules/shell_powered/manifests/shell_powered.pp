@@ -48,14 +48,14 @@ class shell_powered::dev()
 	}
 
 	## TODO add dev tools
-	
-} # class cpp powered::development
 
-class cpp_powered()
+} # class shell_powered::development
+
+class shell_powered()
 {
 	class
 	{
 		'shell_powered::common':
 			;
 	}
-} # class cpp powered
+} # class shell_powered
