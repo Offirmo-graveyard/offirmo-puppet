@@ -68,6 +68,10 @@ node ubuntuserver7
 		'lamp_powered::dev':
 			mysql_root_password => $MySQL_root_password,
 			;
+		'ruby_powered::dev':
+			rvm_security => 'no-and-I-really-understand-what-I-do',
+			rvm_version  => 'latest',
+			;
 		'cpp_powered::dev':
 			;
 		'shell_powered::dev':

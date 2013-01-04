@@ -8,6 +8,4 @@ class svn_powered
 		'subversion':
 			ensure => present; # this package is critical and updates should be supervised. We don't use 'latest'.
 	} # package
-	
 }
-

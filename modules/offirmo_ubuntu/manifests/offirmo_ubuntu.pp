@@ -175,7 +175,16 @@ To set a password : (not always required depending on your config and what you s
 }
 
 
+
+class offirmo_ubuntu::dev()
+{
+	require offirmo_ubuntu
+
+	class
+	{
 		'git_powered':
 			;
-
-			
+		'svn_powered':
+			;
+	}
+}

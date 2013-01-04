@@ -5,13 +5,13 @@ class shell_powered::params()
 {
 	include offirmo_ubuntu::params
 
-	if ($cpp_working_dir)
-	{ $working_dir = $cpp_working_dir }
+	if ($shell_working_dir)
+	{ $working_dir = $shell_working_dir }
 	else
 	{ $working_dir = "$offirmo_ubuntu::params::root_working_dir/shell" }
 	
-	if ($cpp_owner)
-	{ $owner = $cpp_owner }
+	if ($shell_owner)
+	{ $owner = $shell_owner }
 	else
 	{ $owner = "$offirmo_ubuntu::params::owner" }
 }
@@ -22,12 +22,7 @@ class shell_powered::common()
 {
 	require shell_powered::params
 
-	package
-	{
-		'bash':
-			ensure => present, # we'd rather not change version suddenly
-			;
-	}
+	require with_tool::bash
 
 	## now dirs
 	file
