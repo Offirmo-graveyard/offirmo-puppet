@@ -22,7 +22,7 @@
 #		apt_powered::apt_repository
 #		{
 #			zend_apt_repository:
-#				name     => 'zend-server',
+#				reponame => 'zend-server',
 #				address  => 'http://repos.zend.com/zend-server/deb',
 #				branch   => 'server',
 #				sections => 'non-free',
@@ -30,7 +30,7 @@
 #				key_addr => 'http://repos.zend.com/zend.key',
 #		}
 #
-define apt_powered::apt_repository($name, $address, $branch = $::lsbdistcodename, $sections = 'main', $comment = 'a repository', $with_src = false, $key_addr = '')
+define apt_powered::apt_repository($reponame, $address, $branch = $::lsbdistcodename, $sections = 'main', $comment = 'a repository', $with_src = false, $key_addr = '')
 {
 	include apt_powered # and not require ! Since we notify apt-get update, 'apt_powered' has a dependency on this class.
 	require with_tool::wget
@@ -49,7 +49,7 @@ define apt_powered::apt_repository($name, $address, $branch = $::lsbdistcodename
 	
 	# the file were we'll write the repository infos
 	# /etc/apt/sources.list.d/xxx.list
-	$target  = "${apt_powered::sources_dir}/${name}.list"
+	$target  = "${apt_powered::sources_dir}/${reponame}.list"
 	# the content of the file
 	$content = "
 ## $comment
@@ -67,7 +67,7 @@ deb $address $branch $sections
 		{
 			'apt_repository_debug_1':
 				message => "apt_repository :
-- name    = $name
+- name    = $reponame
 - address = $address
 - stuff   = $stuff
 - comment = $comment
@@ -82,7 +82,7 @@ deb $address $branch $sections
 	# the source file
 	file
 	{
-		"apt-$name-repository":
+		"apt-${reponame}-repository":
 			path    => $target,
 			owner   => root,
 			group   => root,
@@ -97,10 +97,10 @@ deb $address $branch $sections
 	{
 		exec
 		{
-			"get-$name-repository-key":
+			"apt_repo-get-${reponame}-repository-key":
 				command     => "wget $key_addr -O- | sudo apt-key add -",
 				require     => Package['wget'],
-				subscribe   => File["apt-$name-repository"],
+				subscribe   => File["apt-${reponame}-repository"],
 				refreshonly => true,
 				notify      => Exec['sudo apt-get update']; # Notify the need for a refresh, see below.
 		}
@@ -181,7 +181,7 @@ define apt_powered::ppa_apt_repository($ppa, $override_branch = '')
 		
 		exec
 		{
-			"install-$name-ppa-apt-repository":
+			"install-${name}-ppa-apt-repository":
 				command => "sudo add-apt-repository $ppa",
 				unless  => "test -f $target",
 				notify  => Exec['sudo apt-get update'], # update is scheduled daily, but we don't want to wait if this file is modified.
@@ -209,7 +209,7 @@ deb-src $address $branch $sections
 			file
 			{
 				$target:
-					require => Exec["install-$name-ppa-apt-repository"],
+					require => Exec["install-${name}-ppa-apt-repository"],
 					content => $content,
 					notify  => Exec['sudo apt-get update'], # update is scheduled daily, but we don't want to wait if this file is modified.
 				;

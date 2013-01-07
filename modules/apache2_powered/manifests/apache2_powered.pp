@@ -37,14 +37,15 @@ class apache2_powered::assets($provider = 'zend')
 		}
 	}
 	
-	file
-	{
-		$apache2_powered::params::dir_serv:
-			owner  => 'www-data',
-			group  => 'www-data',
-			ensure => directory,
-			;
-	}
+	## now defined in lamp powered
+	#file
+	#{
+	#	$apache2_powered::params::dir_serv:
+	#		owner  => 'www-data',
+	#		group  => 'www-data',
+	#		ensure => directory,
+	#		;
+	#}
 }
 
 
@@ -150,9 +151,18 @@ define apache2_powered::with_standard_site ( $ensure = 'present', $contact_email
 	
 	$site_file_en = "${apache2_powered::params::dir_sites}-enabled/${name}"
 	$site_file_av = "${apache2_powered::params::dir_sites}-available/${name}"
-	
+
 	file
 	{
+		$serving_dir:
+			ensure => directory,
+			## we choose to give at last group www-data
+			## but access rights may not allow group to write. User should see himself.
+			#owner  => 'www-data',
+			group  => 'www-data',
+			mode   => 'g+r', ## group (www-data) must have at last read rights, or else we'll not be able to serve...
+			recurse => true,
+			;
 		$site_file_av:
 			# REM : this template needs $contact_email, $server_hostname, serving_dir
 			content => template("apache2_powered/site.erb"),

@@ -7,7 +7,7 @@ class with_zend_apt_repository
 	apt_powered::apt_repository
 	{
 		zend_apt_repository:
-			name     => 'zend-server',
+			reponame => 'zend-server',
 			address  => 'http://repos.zend.com/zend-server/deb',
 			branch   => 'server',
 			sections => 'non-free',

@@ -2,7 +2,6 @@
 # 
 
 
-
 # utility class
 # used to be able to specifiy a run stage
 class with_puppet_apt_repository
@@ -47,14 +46,14 @@ define puppet_powered::downloaded_file(
         $site="",
         $cwd="",
         $creates="",
-        $require="",
+        $require_="",
         $user="") {                                                                                         
 
     exec { $name:                                                                                                                     
         command => "wget ${site}/${name}",                                                         
         cwd => $cwd,
         creates => "${cwd}/${name}",                                                              
-        require => $require,
+        require => $require_,
         user => $user,                                                                                                          
     }
 

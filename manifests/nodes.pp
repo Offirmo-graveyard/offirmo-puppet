@@ -69,14 +69,37 @@ node ubuntuserver7
 			mysql_root_password => $MySQL_root_password,
 			;
 		'ruby_powered::dev':
-			rvm_security => 'no-and-I-really-understand-what-I-do',
-			rvm_version  => 'latest',
 			;
 		'cpp_powered::dev':
 			;
 		'shell_powered::dev':
 			;
 		'puppet_powered::dev':
+			;
+	}
+
+
+	include lmpt::secrets
+	mysql_powered::server::serving_database
+	{
+		'lmpt': # this is the "technical name"
+			root_password => $MySQL_root_password,
+			user          => 'lmpt',
+			;
+	}
+	mysql_powered::user
+	{
+		'lmpt': # this is the "technical name"
+			root_password => $MySQL_root_password,
+			user_password => $lmpt::secrets::MySQL_lmpt_db_password,
+			;
+	}
+	apache2_powered::with_standard_site
+	{
+		'lmpt':
+			contact_email => $contact_email,
+			server_hostname => 'lmpt.offirmo.net',
+			serving_dir => '/work/www/lmpt',
 			;
 	}
 }

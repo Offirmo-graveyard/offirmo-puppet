@@ -35,12 +35,14 @@ class lamp_powered::common($mysql_root_password)
 			;
 	}
 
-	## now serving dirs
+	## now root of serving dirs
+	## www-data since child dirs will be the same
 	file
 	{
 		$lamp_powered::params::working_dir:
+			owner  => 'www-data',
+			group  => 'www-data',
 			ensure => directory,
-			owner  => $lamp_powered::params::owner,
 			;
 	}
 }
@@ -61,7 +63,15 @@ class lamp_powered::dev($mysql_root_password)
 		'zend_server_ce_powered::phpmyadmin::with-extended-session-time':
 			;
 	}
-	
+	## add current user to www-data so he can write in serving dir
+	require offirmo_ubuntu::params
+	$username = $offirmo_ubuntu::params::owner
+	exec
+	{
+		"add-${username}-to-www-data-group":
+			command   => "/usr/bin/sudo /usr/sbin/usermod -a -G www-data $username",
+			logoutput => true,
+	}
 } # class lamp_powered::development
 
 
