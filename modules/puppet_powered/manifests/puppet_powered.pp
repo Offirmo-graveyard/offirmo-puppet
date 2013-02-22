@@ -43,21 +43,23 @@ class puppet_powered::params
 
 ## thanks http://projects.puppetlabs.com/projects/1/wiki/Download_File_Recipe_Patterns
 define puppet_powered::downloaded_file(
-        $site="",
-        $cwd="",
-        $creates="",
-        $require_="",
-        $user="") {                                                                                         
-
-    exec { $name:                                                                                                                     
-        command => "wget ${site}/${name}",                                                         
-        cwd => $cwd,
-        creates => "${cwd}/${name}",                                                              
-        require => $require_,
-        user => $user,                                                                                                          
-    }
-
+        $url,
+        $user    = "root",
+        $timeout = 60, $unless_ = '', $require_ = '')
+{                                                                                         
+	exec
+	{
+		"download-file-$name":
+			command   => "/usr/bin/wget --output-document=\"${name}\" ${url}",
+			creates   => "${name}",
+			user      => $user,
+			logoutput => true,
+			timeout   => $timeout,
+	}
+	if $require_ {	Exec["download-file-$name"] { require +> $require_ } }
+	if $unless_  {	Exec["download-file-$name"] { unless  +> $unless_ } }
 }
+
 
 class puppet_powered::common_assets
 {

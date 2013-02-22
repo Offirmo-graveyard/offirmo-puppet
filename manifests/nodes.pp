@@ -19,12 +19,107 @@ Stage[first] -> Stage[apt] -> Stage[main] -> Stage[last]
 
 
 
+####### Kal+10k server #######
+import "kalemya_secrets.pp"
+import "les10kiloMEP_secrets.pp"
+node ip-10-228-75-167
+#node ubuntuserver7
+{
+	## the passwords and misc credentials
+	include kalemya::secrets
+	include les10kiloMEP::secrets
+	$MySQL_root_password = $kalemya::secrets::MySQL_root_password
+	$contact_email       = $les10kiloMEP::secrets::contact_email
+	$gmail_password      = $les10kiloMEP::secrets::gmail_password
+
+
+	## base classes of this machine
+	## that need a specific stage.
+	## We use the "class" syntax here which allow us to specify a run stage.
+	class
+	{
+		'puppeted': # this only cause debug display for the various stages
+			stage   => first,
+			;
+		'apt_powered': # Very important for managing apt sources
+			stage   => apt,
+			;
+	}
+	## basics, second part (no stages)
+	class
+	{
+		'ubuntu_base': # hardware/drivers install (mostly virtualization additions)
+			;
+		'offirmo_ubuntu': # useful packages and users
+			;
+		'puppet_powered::client': # of course ;-)
+			;
+	}
+
+	### The roles of this machine
+	class
+	{
+		# simple SMTP, for mail capabilities
+		'ssmtp_powered':
+			template => 'gmail',
+			email    => $contact_email,
+			password => $gmail_password,
+			;
+		'lamp_powered::dev':
+			mysql_root_password => $MySQL_root_password,
+			;
+		'apache2_powered':
+			;
+	}
+
+
+	class
+	{
+		'wordpress_server':
+			mysql_root_pwd => $MySQL_root_password,
+			;
+	}
+	wordpress_server::serving_instance
+	{
+		'les10kilomep': # this is the "technical name"
+			human_name     => "Les 10 kilo\'MEP",
+			server_name    => 'les10kilomep.org',
+			webmaster      => $les10kiloMEP::secrets::contact_email,
+			user           => 'l10km',
+			mysql_root_pwd => $MySQL_root_password,
+			mysql_user_pwd => $les10kiloMEP::secrets::MySQL_worpress_db_password,
+			;
+	}
+	wordpress_server::serving_instance
+	{
+		'kalemya': # this is the "technical name"
+			human_name     => 'Kalemya',
+			server_name    => 'kalemya.org',
+			webmaster      => $kalemya::secrets::contact_email,
+			user           => 'kal',
+			mysql_root_pwd => $MySQL_root_password,
+			mysql_user_pwd => $kalemya::secrets::MySQL_worpress_db_password,
+			table_prefix   => 'wpkal_',
+			;
+	}
+	wordpress_server::serving_instance
+	{
+		'lesvieux10kilomep': # this is the "technical name"
+			human_name     => "Les vieux 10 kilo\'MEP",
+			server_name    => 'vieux.les10kilomep.org',
+			webmaster      => $les10kiloMEP::secrets::contact_email,
+			user           => 'vieuxl10km',
+			mysql_root_pwd => $MySQL_root_password,
+			mysql_user_pwd => $les10kiloMEP::secrets::MySQL_worpress_db_password_old,
+			;
+	}
+}
+
 
 ####### NOMRPG server #######
 import "nomrpg_secrets.pp"
 #node ip-10-39-13-72
-node ubuntuserver7
-#node ubuntuserver3
+node ubuntuserver7x
 {
 	## the passwords and misc credentials
 	include nomrpg::secrets
@@ -68,8 +163,8 @@ node ubuntuserver7
 		'lamp_powered::dev':
 			mysql_root_password => $MySQL_root_password,
 			;
-		'ruby_powered::dev':
-			;
+		#'ruby_powered::dev':
+		#	;
 		'cpp_powered::dev':
 			;
 		'shell_powered::dev':
@@ -102,6 +197,26 @@ node ubuntuserver7
 			serving_dir => '/work/www/lmpt',
 			;
 	}
+
+
+	include les10kiloMEP::secrets
+	class
+	{
+		'wordpress_server':
+			mysql_root_pwd => $MySQL_root_password,
+			;
+	}
+	#wordpress_server::serving_instance
+	#{
+	#	'les10kilomep': # this is the "technical name"
+	#		human_name     => "Les 10 kilo\'MEP",
+	#		server_name    => 'les10kilomep.org',
+	#		webmaster      => $contact_email,
+	#		user           => 'l10km',
+	#		mysql_root_pwd => $MySQL_root_password,
+	#		mysql_user_pwd => $les10kiloMEP::secrets::MySQL_worpress_db_password,
+	#		;
+	#}
 }
 
 

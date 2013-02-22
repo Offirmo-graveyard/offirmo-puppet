@@ -5,24 +5,28 @@
 # creates a dedicated linux user for security (not finished yet)
 # deploy a pre-configured wordpress (with several plugins)
 
+
 class wordpress_server::params
 {
 	include apache2_powered::params
 	$serving_dir = "${apache2_powered::params::dir_serv}/wordpress_instances"
 	
-	$wordpress_archive="wordpress-3.3-fr_FR_alt.zip" # custom-made archives with theme + plugins included
+	$default_template_user_pwd = "azbycx"
+
+	$wordpress_archive="wordpress-src.zip" # custom-made archives with theme + plugins included
 	
 	$wordpress_archive_path="$serving_dir/$wordpress_archive"
 }
 
-class wordpress_server()
+
+class wordpress_server::common()
 {
 	# apache is the easiest pick
 	require apache2_powered
 	
 	# need mysql capabilities
-	require mysql::client
-	require mysql::server
+	require mysql_powered::client
+	require mysql_powered::server
 	
 	include wordpress_server::params
 	
@@ -33,20 +37,11 @@ class wordpress_server()
 			;
 	}
 	
-} # class wordpress_server
-
-
-class wordpress_server::common()
-{
-	include wordpress_server::params
-	
-	file
+	puppet_powered::downloaded_file
 	{
-		'wordpress-archive':
-			path   => "${wordpress_server::params::wordpress_archive_path}",
-			source => "puppet:///modules/wordpress_server/${wordpress_server::params::wordpress_archive}",
-			ensure => present,
-			notify => [ Exec[ "ensure-wordpress-template" ] ],
+		"${wordpress_server::params::wordpress_archive_path}":
+			## remember to update this url
+			url => "http://fr.wordpress.org/wordpress-3.5.1-fr_FR.zip",
 			;
 	}
 
@@ -57,26 +52,24 @@ class wordpress_server::common()
 			command => "unzip ${wordpress_server::params::wordpress_archive_path} -d ${wordpress_server::params::serving_dir}",
 			unless  => "test -d ${wordpress_server::params::serving_dir}/wordpress",
 			path    => "/bin:/usr/bin",
-			require => [ File[ 'wordpress-archive', "${wordpress_server::params::serving_dir}" ] ],
+			require => Puppet_powered::Downloaded_file[ "${wordpress_server::params::wordpress_archive_path}" ],
 			;
 	}
-	
-
 }
 
 
 # server_name : SANS le www, exemple : toto.org
 # user : both for a unix user and a mysql user
-define wordpress_server::serving_instance($server_name, $human_name, $webmaster, $user, $mysql_root_pwd = '', $mysql_user_pwd = '', $copyright_start = '')
+define wordpress_server::serving_instance($server_name, $human_name, $webmaster, $user, $mysql_root_pwd = '', $mysql_user_pwd = '', $copyright_start = '', $table_prefix = 'wp_')
 {
 	include wordpress_server::params
 	include wordpress_server::common
 	
 	$instance_name = $name
-	$instance_dir = "${wordpress_server::params::serving_dir}/$instance_name"
-	$mysql_user = $user
+	$instance_dir  = "${wordpress_server::params::serving_dir}/$instance_name"
+	$mysql_user    = $user
 	$mysql_db_name = $instance_name
-	
+
 	# TODO for security reasons, execute the wordpress PHP under this limited user
 	# TODO requires an apache extension
 	user
@@ -90,8 +83,18 @@ define wordpress_server::serving_instance($server_name, $human_name, $webmaster,
 			;
 	}
 	
-	$rights=664
+	$rights=644
 	$owner='www-data' # $user XXX todo executes PHP with $user
+	exec
+	{
+		"install wordpress $instance_name":
+			unless  => "test -f $instance_dir/wp-app.php", # any file supposed to be here if wp is correctly installed
+			command => "cp --recursive --preserve --no-target-directory ${wordpress_server::params::serving_dir}/wordpress $instance_dir; chown -R $owner:www-data $instance_dir/*", # chown is both an optimization and a hack
+			path    => "/bin:/usr/bin",
+			require => [ Exec["ensure-wordpress-template"], File[ "$instance_dir" ] ], # Wordpress_server::Serving_instance[ 'wordpress' ], 
+			;
+	} #  chmod -R $rights $instance_dir/*
+	
 	file
 	{
 		"$instance_dir":
@@ -105,17 +108,10 @@ define wordpress_server::serving_instance($server_name, $human_name, $webmaster,
 			# REM : this template needs $mysql_db_name, $mysql_user, $mysql_user_pwd, $copyright_start
 			# and use a trick to generate 64o secret keys : http://stackoverflow.com/questions/88311/how-best-to-generate-a-random-string-in-ruby
 			content => template("wordpress_server/wp-config.php.erb"),
+			owner   => $owner,
+			group   => 'www-data', # used by apache
 			replace => no, # one time init
 			require => [ File[ "$instance_dir" ] ],
-			;
-	}
-	exec
-	{
-		"install wordpress $instance_name":
-			unless  => "test -f $instance_dir/wp-app.php", # any file supposed to be here if wp is correctly installed
-			command => "cp -r ${wordpress_server::params::serving_dir}/wordpress/* $instance_dir; chown -R $owner:www-data $instance_dir/*; chmod -R $rights $instance_dir/*", # chown is both an optimization and a hack
-			path    => "/bin:/usr/bin",
-			require => [ Exec[ "ensure-wordpress-template" ], File[ "$instance_dir" ] ],
 			;
 	}
 	
@@ -130,27 +126,27 @@ define wordpress_server::serving_instance($server_name, $human_name, $webmaster,
 	
 	if ($mysql_root_pwd and $mysql_user_pwd)
 	{
-		mysql::user
+		mysql_powered::user
 		{
 			"$mysql_user":
 				root_password => $mysql_root_pwd,
 				user_password => $mysql_user_pwd,
 				;
 		}
-		mysql::server::serving_database
+		mysql_powered::server::serving_database
 		{
 			"$mysql_db_name":
 				root_password => $mysql_root_pwd,
 				user          => $mysql_user,
-				require       => Mysql::User[ "$mysql_user" ],
+				require       => Mysql_powered::User[ "$mysql_user" ],
 				;
 		}
 	}
 	else
 	{
-		puppet::impossible_class
+		puppet_powered::impossible_class
 		{
-			"create-$instance_name-wp-database":
+			"create-${instance_name}-wp-database":
 				text => "
 I can't create databases for this wordpress
 because you didn't give me the necessary passwords.
@@ -160,13 +156,30 @@ Please do it yourself.
 		}
 	}
 	
-	puppet::impossible_class
+	puppet_powered::impossible_class
 	{
-		"finish-$instance_name-wp-install":
+		"finish-${instance_name}-wp-install":
 			text => "
 Your wordpress has been created but is curently not protected.
-Please access http://www.$server
+Please access http://www.${server_name}
 ",
 			;
 	}
 }
+
+
+class wordpress_server($mysql_root_pwd = '', $mysql_user_pwd = "azbycx")
+{
+	wordpress_server::serving_instance
+	{
+		'wordpress_template': # this is the "technical name"
+			human_name     => "template wordpress install",
+			server_name    => 'wordpress.template',
+			webmaster      => 'a@b.c',
+			user           => 'wp_template',
+			mysql_root_pwd => $mysql_root_pwd,
+			mysql_user_pwd => $mysql_user_pwd,
+			;
+	}
+}
+
